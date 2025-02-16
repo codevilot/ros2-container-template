@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pipreqs-update
+        name: Update requirements.txt
+        entry: bash -c "pipreqs . --force && git add requirements.txt"
+        language: system
+        pass_filenames: false
