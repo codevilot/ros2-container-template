@@ -8,6 +8,7 @@ pre-commit install
 Build public repository docker image 
 ```
 docker build \
+  --build-arg WORK_DIR=<container-work-dir> \
   --build-arg REPO_URL=<github-repo-url> \
   --build-arg GIT_NAME=<your-git-name> \
   --build-arg GIT_EMAIL=<your-git-email> \
@@ -17,6 +18,7 @@ docker build \
 Build private repository docker image
 ```
 docker build \
+  --build-arg WORK_DIR=<container-work-dir> \
   --build-arg REPO_URL=<github-repo-url> \
   --build-arg GIT_NAME=<your-git-name> \
   --build-arg GIT_EMAIL=<your-git-email> \
