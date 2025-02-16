@@ -1,28 +1,41 @@
 FROM osrf/ros:humble-desktop
 
-WORKDIR ~/rs_dev/src
+WORKDIR /root/rs_dev/src
 
 ARG REPO_URL
 ARG GIT_NAME
 ARG GIT_EMAIL
 ARG GIT_PRIVATE_TOKEN
 
-RUN apt-get update
-RUN apt-get install -y git && apt-get install -y python3-pip
+# Extract repository path without domain
+ARG REPO_URL_CLEAN=${REPO_URL#https://github.com/}
+ARG REPO_URL_CLEAN=${REPO_URL_CLEAN#http://github.com/}
+ARG REPO_URL_CLEAN=${REPO_URL_CLEAN#github.com/}
+ARG REPO_DIR=${REPO_URL_CLEAN##*/}  # Get repository name
 
-RUN git config --global user.name "$GIT_NAME" && \
-    git config --global user.email "$GIT_EMAIL"
+RUN apt-get update && \
+    apt-get install -y git python3-pip
 
-# GIT_PRIVATE_TOKEN이 있으면 token을 사용해서 클론하고, 없으면 기본 URL로 클론
-RUN if [ -n "$GIT_PRIVATE_TOKEN" ]; then \
-        git clone "https://${GIT_PRIVATE_TOKEN}@github.com/${REPO_URL}"; \
+RUN git config --global user.name "${GIT_NAME}" && \
+    git config --global user.email "${GIT_EMAIL}"
+
+# Clone repository
+RUN if [ -n "${GIT_PRIVATE_TOKEN}" ]; then \
+    git clone "https://${GIT_PRIVATE_TOKEN}:x-oauth-basic@github.com/${REPO_URL_CLEAN}"; \
     else \
-        git clone "https://github.com/${REPO_URL}"; \
+    git clone "https://github.com/${REPO_URL_CLEAN}"; \
     fi
 
-RUN [ -f "requirements.txt" ] && pip3 install -r requirements.txt || :  # [1][5]
+# Move to repository directory
+WORKDIR /root/rs_dev/src/${REPO_DIR}
 
-RUN pip3 install pipreqs && pip3 install pre-commit 
-RUN pre-commit install
+# Install requirements (now in correct directory)
+RUN if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
-RUN echo "Done!"
+# Install tools and configure pre-commit
+RUN pip3 install pipreqs pre-commit && \
+    git config --global --add safe.directory "$(pwd)" && \
+    pre-commit install
+
+# Optional: Return to original directory
+WORKDIR /root/rs_dev/src
