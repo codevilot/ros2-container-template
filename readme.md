@@ -5,29 +5,35 @@ pre-commit install
 ```
 
 
-Build public repository docker image 
+## Build docker image
 ```
 docker build \
   --build-arg WORK_DIR=<container-work-dir> \
-  --build-arg REPO_URL=<github-repo-url> \
-  --build-arg GIT_NAME=<your-git-name> \
-  --build-arg GIT_EMAIL=<your-git-email> \
-  -t <docker-image-name> .
-```
-
-Build private repository docker image
-```
-docker build \
-  --build-arg WORK_DIR=<container-work-dir> \
-  --build-arg REPO_URL=<github-repo-url> \
-  --build-arg GIT_NAME=<your-git-name> \
-  --build-arg GIT_EMAIL=<your-git-email> \
-  --build-arg GIT_PRIVATE_TOKEN=<your-private-token> \
   -t <docker-image-name> .
 ```
 
 
-Run container 
+## Run container 
 ```
-docker run --name <docker-container-name> -it <docker-image-name>
+docker run -v `pwd`:/<container-work-dir> -it --name <docker-container-name> <docker-image-name> /bin/sh
 ```
+
+## Set precommit python dependency
+```w
+pip3 install pipreqs pre-commit
+pre-commit install
+```
+
+## Full code
+```
+export WORK_DIR = <container-work-dir> # binding to work dir and this repository
+export DOCKER_IMAGE_NAME = <docker-image-name>
+export DOCKER_CONTAINER_NAME = <docker-container-name>
+
+docker build \
+  --build-arg WORK_DIR=${WORK_DIR} \
+  -t ${DOCKER_IMAGE_NAME} .
+
+docker run -v `pwd`:/${WORK_DIR} -it --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME} /bin/sh
+```
+
